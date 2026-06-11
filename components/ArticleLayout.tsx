@@ -1,4 +1,8 @@
-import { generateFAQSchema, generateAggregateOfferSchema } from "@/lib/schema";
+import {
+  generateFAQSchema,
+  generateAggregateOfferSchema,
+  generateArticleSchema,
+} from "@/lib/schema";
 import type { ArticleFrontmatter } from "@/lib/mdx";
 import LeadCaptureForm from "./LeadCaptureForm";
 import MobileStickyCTA from "./MobileStickyCTA";
@@ -18,6 +22,14 @@ export default function ArticleLayout({
   if (frontmatter.schema?.offers) {
     schemas.push(generateAggregateOfferSchema(frontmatter.schema.offers));
   }
+  schemas.push(generateArticleSchema(frontmatter));
+
+  const updated = frontmatter.updated || frontmatter.date;
+  const displayDate = new Intl.DateTimeFormat("en-US", {
+    month: "long",
+    day: "numeric",
+    year: "numeric",
+  }).format(new Date(`${updated}T00:00:00`));
 
   return (
     <>
@@ -29,8 +41,25 @@ export default function ArticleLayout({
         />
       ))}
 
-      <article className="pb-16">
-        {children}
+      <article className="pb-16 max-w-[760px] mx-auto">
+        <header className="mb-8 border-b border-gray-200 pb-6">
+          <p className="text-xs font-semibold uppercase tracking-wide text-gray-500 mb-3">
+            {frontmatter.marketName} Cost Guide
+          </p>
+          <h1 className="text-3xl sm:text-4xl font-bold text-gray-950 leading-tight mb-4">
+            {frontmatter.title}
+          </h1>
+          <p className="text-lg text-gray-600 leading-8">
+            {frontmatter.description}
+          </p>
+          <div className="mt-5 flex flex-wrap gap-x-4 gap-y-1 text-xs text-gray-500">
+            <span>Updated {displayDate}</span>
+            <span>San Diego County pricing</span>
+            <span>Contractor-informed estimates</span>
+          </div>
+        </header>
+
+        <div>{children}</div>
 
         <LeadCaptureForm />
 

@@ -54,10 +54,15 @@ export default async function ArticlePage({
   const article = getArticleBySlug(market, slug);
   if (!article) notFound();
 
+  const contentWithoutDuplicateTitle = article.content.replace(
+    /^\s*#\s+.*(?:\r?\n)+/,
+    "",
+  );
+
   return (
     <ArticleLayout frontmatter={article.frontmatter}>
       <MDXRemote
-        source={article.content}
+        source={contentWithoutDuplicateTitle}
         components={mdxComponents}
         options={{
           mdxOptions: {
