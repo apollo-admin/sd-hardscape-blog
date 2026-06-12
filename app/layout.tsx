@@ -2,9 +2,11 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import Script from "next/script";
 import HeaderCTA from "@/components/HeaderCTA";
+import PostHogInit from "@/components/PostHogInit";
 import "./globals.css";
 
 const siteUrl = new URL("https://www.homeguideiq.com");
+const ogImage = "/opengraph-image";
 
 const websiteJsonLd = {
   "@context": "https://schema.org",
@@ -38,6 +40,21 @@ export const metadata: Metadata = {
     url: "/",
     siteName: "HomeGuide IQ",
     type: "website",
+    images: [
+      {
+        url: ogImage,
+        width: 1200,
+        height: 630,
+        alt: "HomeGuide IQ San Diego outdoor project cost guides",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "HomeGuide IQ - San Diego Outdoor Project Cost Guides",
+    description:
+      "Local cost guides for San Diego homeowners planning hardscape, turf, pavers, pergolas, fire features, and backyard remodels.",
+    images: [ogImage],
   },
 };
 
@@ -49,16 +66,6 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link
-          rel="preconnect"
-          href="https://fonts.gstatic.com"
-          crossOrigin="anonymous"
-        />
-        <link
-          href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
-          rel="stylesheet"
-        />
         <meta
           name="google-site-verification"
           content="y0hEjg_Og9_KQmk0z4xrNpvkpZnjFkhunjL0JC6afLY"
@@ -79,6 +86,7 @@ function gtag(){dataLayer.push(arguments);}
 gtag('js', new Date());
 gtag('config', 'G-PH5DT7C5CS');`}
         </Script>
+        <PostHogInit />
         <header className="sticky top-0 z-50 bg-white/95 backdrop-blur-sm border-b border-gray-200 shadow-sm">
           <div className="mx-auto max-w-[960px] px-5 py-3 flex items-center justify-between">
             <div>

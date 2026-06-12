@@ -28,6 +28,19 @@ function text(value: unknown): string | null {
   return trimmed.length > 0 ? trimmed : null;
 }
 
+function scrubUrl(value: unknown): string | null {
+  const raw = text(value);
+  if (!raw) return null;
+  try {
+    const parsed = new URL(raw);
+    parsed.search = "";
+    parsed.hash = "";
+    return parsed.toString().replace(/\/$/, parsed.pathname === "/" ? "/" : "");
+  } catch {
+    return raw.split("?")[0].split("#")[0] || null;
+  }
+}
+
 function normalizeProjectType(value: unknown): string | null {
   const raw = text(value);
   if (!raw) return null;
@@ -101,6 +114,22 @@ export async function POST(request: NextRequest) {
   const timeline = text(body.timeline);
   const homeownerMessage = text(body.message);
   const internalTest = body.internalTest === true;
+  const referrer = scrubUrl(body.referrer);
+  const landingPage = text(body.landing_page) ?? text(body.page);
+  const guideSlug = text(body.guide_slug);
+  const variantId = text(body.variant_id);
+  const sessionId = text(body.session_id);
+  const anonymousId = text(body.anonymous_id);
+  const rawUtm = {
+    utm_source: text(body.utm_source),
+    utm_medium: text(body.utm_medium),
+    utm_campaign: text(body.utm_campaign),
+    utm_content: text(body.utm_content),
+    utm_term: text(body.utm_term),
+    gclid: text(body.gclid),
+    gbraid: text(body.gbraid),
+    wbraid: text(body.wbraid),
+  };
 
   if (!contactPhone) {
     return error("Phone is required so the contractor can call you back.", 400);
@@ -134,9 +163,21 @@ export async function POST(request: NextRequest) {
     zip_code: zipCode,
     message: message || null,
     lead_source: "homeguideiq_blog",
+    utm_source: text(body.utm_source),
+    utm_medium: text(body.utm_medium),
+    utm_campaign: text(body.utm_campaign),
+    utm_content: text(body.utm_content),
+    utm_term: text(body.utm_term),
+    raw_utm: rawUtm,
     raw_payload: {
       source_site: "homeguideiq.com",
       page: text(body.page),
+      referrer,
+      landing_page: landingPage,
+      guide_slug: guideSlug,
+      variant_id: variantId,
+      session_id: sessionId,
+      anonymous_id: anonymousId,
       project_type_label: rawProjectType,
       budget_range: budgetRange,
       timeline,

@@ -41,6 +41,13 @@ export async function generateMetadata({
       publishedTime: frontmatter.date,
       modifiedTime: frontmatter.updated,
       authors: [frontmatter.author],
+      images: ["/opengraph-image"],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: frontmatter.title,
+      description: frontmatter.description,
+      images: ["/opengraph-image"],
     },
   };
 }

@@ -3,6 +3,27 @@ import type { Metadata } from "next";
 export const metadata: Metadata = {
   title: "Privacy",
   description: "HomeGuide IQ privacy policy for estimate requests.",
+  alternates: {
+    canonical: "/privacy",
+  },
+  robots: {
+    index: false,
+    follow: true,
+  },
+  openGraph: {
+    title: "HomeGuide IQ Privacy Policy",
+    description: "HomeGuide IQ privacy policy for estimate requests.",
+    url: "/privacy",
+    siteName: "HomeGuide IQ",
+    type: "website",
+    images: ["/opengraph-image"],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "HomeGuide IQ Privacy Policy",
+    description: "HomeGuide IQ privacy policy for estimate requests.",
+    images: ["/opengraph-image"],
+  },
 };
 
 export default function PrivacyPage() {

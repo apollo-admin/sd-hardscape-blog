@@ -5,6 +5,25 @@ export const metadata: Metadata = {
   title: "About",
   description:
     "About HomeGuide IQ and how our San Diego outdoor project cost guides are produced.",
+  alternates: {
+    canonical: "/about",
+  },
+  openGraph: {
+    title: "About HomeGuide IQ",
+    description:
+      "About HomeGuide IQ and how our San Diego outdoor project cost guides are produced.",
+    url: "/about",
+    siteName: "HomeGuide IQ",
+    type: "website",
+    images: ["/opengraph-image"],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "About HomeGuide IQ",
+    description:
+      "About HomeGuide IQ and how our San Diego outdoor project cost guides are produced.",
+    images: ["/opengraph-image"],
+  },
 };
 
 export default function AboutPage() {

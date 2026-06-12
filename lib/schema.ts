@@ -39,6 +39,7 @@ export function generateArticleSchema(article: {
   slug: string;
 }) {
   const url = `https://www.homeguideiq.com/${article.market}/cost/${article.slug}`;
+  const imageUrl = "https://www.homeguideiq.com/opengraph-image";
 
   return {
     "@context": "https://schema.org",
@@ -47,6 +48,7 @@ export function generateArticleSchema(article: {
     description: article.description,
     datePublished: article.date,
     dateModified: article.updated || article.date,
+    image: imageUrl,
     author: {
       "@type": "Organization",
       name: article.author || "HomeGuide IQ Editorial Team",
@@ -55,10 +57,51 @@ export function generateArticleSchema(article: {
       "@type": "Organization",
       name: "HomeGuide IQ",
       url: "https://www.homeguideiq.com",
+      logo: {
+        "@type": "ImageObject",
+        url: imageUrl,
+        width: 1200,
+        height: 630,
+      },
     },
     mainEntityOfPage: {
       "@type": "WebPage",
       "@id": url,
     },
+  };
+}
+
+export function generateBreadcrumbListSchema(article: {
+  title: string;
+  market: string;
+  marketName: string;
+  slug: string;
+}) {
+  const marketUrl = `https://www.homeguideiq.com/${article.market}`;
+  const articleUrl = `${marketUrl}/cost/${article.slug}`;
+
+  return {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      {
+        "@type": "ListItem",
+        position: 1,
+        name: "HomeGuide IQ",
+        item: "https://www.homeguideiq.com/",
+      },
+      {
+        "@type": "ListItem",
+        position: 2,
+        name: `${article.marketName} Cost Guides`,
+        item: marketUrl,
+      },
+      {
+        "@type": "ListItem",
+        position: 3,
+        name: article.title,
+        item: articleUrl,
+      },
+    ],
   };
 }

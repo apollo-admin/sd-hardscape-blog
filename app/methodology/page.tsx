@@ -4,6 +4,25 @@ export const metadata: Metadata = {
   title: "Methodology",
   description:
     "How HomeGuide IQ builds San Diego outdoor project pricing guides and estimate ranges.",
+  alternates: {
+    canonical: "/methodology",
+  },
+  openGraph: {
+    title: "HomeGuide IQ Methodology",
+    description:
+      "How HomeGuide IQ builds San Diego outdoor project pricing guides and estimate ranges.",
+    url: "/methodology",
+    siteName: "HomeGuide IQ",
+    type: "website",
+    images: ["/opengraph-image"],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "HomeGuide IQ Methodology",
+    description:
+      "How HomeGuide IQ builds San Diego outdoor project pricing guides and estimate ranges.",
+    images: ["/opengraph-image"],
+  },
 };
 
 export default function MethodologyPage() {
