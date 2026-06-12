@@ -1,8 +1,21 @@
 "use client";
 
-import { useState, FormEvent } from "react";
+import {
+  useEffect,
+  useRef,
+  useState,
+  type FocusEvent,
+  type FormEvent,
+} from "react";
+import { captureHomeGuideEvent } from "@/lib/homeguideBrowserAnalytics";
+import {
+  FORM_ID,
+  getGa4GenerateLeadParams,
+  getHomeGuideLeadAttribution,
+  getPostHogLeadFunnelProperties,
+} from "@/lib/homeguideAnalytics.mjs";
 
-type GtagEventParams = Record<string, string | boolean | null | undefined>;
+type GtagEventParams = Record<string, string | number | boolean | null>;
 
 declare global {
   interface Window {
@@ -19,10 +32,113 @@ function getFormString(formData: FormData, key: string) {
   return typeof value === "string" ? value.trim() : "";
 }
 
+function getOrCreateBrowserId(key: string, prefix: string) {
+  if (typeof window === "undefined") return null;
+  try {
+    const existing = window.localStorage.getItem(key);
+    if (existing) return existing;
+    const generated =
+      typeof window.crypto?.randomUUID === "function"
+        ? `${prefix}-${window.crypto.randomUUID()}`
+        : `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+    window.localStorage.setItem(key, generated);
+    return generated;
+  } catch {
+    return null;
+  }
+}
+
 export default function LeadCaptureForm() {
   const [submitted, setSubmitted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const formRef = useRef<HTMLFormElement>(null);
+  const formViewedRef = useRef(false);
+  const formStartedRef = useRef(false);
+
+  useEffect(() => {
+    const form = formRef.current;
+    if (!form) return;
+
+    function captureViewed() {
+      if (formViewedRef.current) return;
+      formViewedRef.current = true;
+      captureHomeGuideEvent("hg_form_viewed", {
+        ...getPostHogLeadFunnelProperties({
+          pathname: window.location.pathname,
+          search: window.location.search,
+          referrer: document.referrer,
+          projectType: null,
+          budget: null,
+          timeline: null,
+          internalTest:
+            new URLSearchParams(window.location.search).get("homeguide_test") ===
+            "1",
+          sessionId: null,
+          anonymousId: null,
+        }),
+        form_id: FORM_ID,
+        placement: "article_or_home",
+      });
+    }
+
+    if (typeof IntersectionObserver === "undefined") {
+      captureViewed();
+      return;
+    }
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry?.isIntersecting) {
+          captureViewed();
+          observer.disconnect();
+        }
+      },
+      { threshold: 0.35 },
+    );
+    observer.observe(form);
+
+    return () => observer.disconnect();
+  }, []);
+
+  function getInternalTestFlag() {
+    return (
+      typeof window !== "undefined" &&
+      new URLSearchParams(window.location.search).get("homeguide_test") === "1"
+    );
+  }
+
+  function getPathname() {
+    return typeof window !== "undefined" ? window.location.pathname : "/";
+  }
+
+  function handleFormFocus(e: FocusEvent<HTMLFormElement>) {
+    if (formStartedRef.current) return;
+    formStartedRef.current = true;
+
+    const firstField =
+      e.target instanceof HTMLInputElement ||
+      e.target instanceof HTMLSelectElement ||
+      e.target instanceof HTMLTextAreaElement
+        ? e.target.name
+        : null;
+
+    captureHomeGuideEvent("hg_form_started", {
+      ...getPostHogLeadFunnelProperties({
+        pathname: getPathname(),
+        search: window.location.search,
+        referrer: document.referrer,
+        projectType: null,
+        budget: null,
+        timeline: null,
+        internalTest: getInternalTestFlag(),
+        sessionId: null,
+        anonymousId: null,
+      }),
+      first_field: firstField,
+      placement: "article_or_home",
+    });
+  }
 
   async function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -30,9 +146,25 @@ export default function LeadCaptureForm() {
     setSubmitting(true);
 
     const formData = new FormData(e.currentTarget);
-    const internalTest =
-      typeof window !== "undefined" &&
-      new URLSearchParams(window.location.search).get("homeguide_test") === "1";
+    const internalTest = getInternalTestFlag();
+    const pathname = getPathname();
+    const search = typeof window !== "undefined" ? window.location.search : "";
+    const referrer = typeof document !== "undefined" ? document.referrer : "";
+    const sessionId = getOrCreateBrowserId(
+      "homeguideiq_session_id",
+      "hg-session",
+    );
+    const anonymousId = getOrCreateBrowserId(
+      "homeguideiq_anonymous_id",
+      "hg-anon",
+    );
+    const leadAttribution = getHomeGuideLeadAttribution({
+      pathname,
+      search,
+      referrer,
+      sessionId,
+      anonymousId,
+    }) as Record<string, unknown>;
     const data = {
       name: getFormString(formData, "name"),
       phone: getFormString(formData, "phone"),
@@ -42,9 +174,23 @@ export default function LeadCaptureForm() {
       budget: getFormString(formData, "budget"),
       timeline: getFormString(formData, "timeline"),
       message: getFormString(formData, "message"),
-      page: typeof window !== "undefined" ? window.location.pathname : null,
+      page: pathname,
+      ...leadAttribution,
       internalTest,
     };
+    const postHogLeadProperties = getPostHogLeadFunnelProperties({
+      pathname,
+      search,
+      referrer,
+      projectType: data.projectType,
+      budget: data.budget,
+      timeline: data.timeline,
+      internalTest: data.internalTest,
+      sessionId,
+      anonymousId,
+    }) as Record<string, unknown>;
+
+    captureHomeGuideEvent("hg_form_submit_attempted", postHogLeadProperties);
 
     try {
       const response = await fetch("/api/leads", {
@@ -61,15 +207,29 @@ export default function LeadCaptureForm() {
           responseBody.error ?? "Lead submission failed. Please try again.",
         );
       }
-      window.gtag?.("event", "generate_lead", {
-        source: "homeguideiq_blog",
-        project_type: data.projectType || null,
-        zip: data.zip || null,
-        page: data.page,
-        internal_test: data.internalTest,
-      });
+      window.gtag?.(
+        "event",
+        "generate_lead",
+        getGa4GenerateLeadParams({
+          pathname,
+          projectType: data.projectType,
+          internalTest: data.internalTest,
+        }) as GtagEventParams,
+      );
+      captureHomeGuideEvent(
+        "hg_form_submit_succeeded",
+        postHogLeadProperties,
+      );
       setSubmitted(true);
     } catch (submitError) {
+      captureHomeGuideEvent("hg_form_submit_failed", {
+        ...postHogLeadProperties,
+        error_stage: "submit",
+        error_code:
+          submitError instanceof Error
+            ? submitError.message.slice(0, 80)
+            : "unknown_error",
+      });
       setError(
         submitError instanceof Error
           ? submitError.message
@@ -100,7 +260,9 @@ export default function LeadCaptureForm() {
   return (
     <form
       id="lead-form"
+      ref={formRef}
       onSubmit={handleSubmit}
+      onFocusCapture={handleFormFocus}
       className="bg-gray-50 border border-gray-200 rounded-lg p-6 my-10"
     >
       <h3 className="text-xl font-semibold mb-1 text-gray-900">

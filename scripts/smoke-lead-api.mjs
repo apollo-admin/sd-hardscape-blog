@@ -116,6 +116,20 @@ try {
     zip: "92101",
     projectType: "Pavers",
     page: "/san-diego/cost/paver-patio-cost",
+    utm_source: "google",
+    utm_medium: "cpc",
+    utm_campaign: "paver-cost-test",
+    utm_content: "hero",
+    utm_term: "paver patio cost",
+    gclid: "test-gclid",
+    gbraid: "test-gbraid",
+    wbraid: "test-wbraid",
+    referrer: "https://www.google.com/search?q=pavers",
+    landing_page: "/san-diego/cost/paver-patio-cost",
+    guide_slug: "paver-patio-cost",
+    variant_id: "estimate_v1",
+    session_id: "hg-session-123",
+    anonymous_id: "hg-anon-456",
     internalTest: true,
   });
 
@@ -138,6 +152,32 @@ try {
   if (submitted.project_type !== "pavers") throw new Error("project type not normalized");
   if (submitted.zip_code !== "92101") throw new Error("zip not mapped");
   if (submitted.lead_source !== "homeguideiq_blog") throw new Error("lead source not tagged");
+  if (submitted.utm_source !== "google") throw new Error("utm_source not forwarded");
+  if (submitted.utm_medium !== "cpc") throw new Error("utm_medium not forwarded");
+  if (submitted.utm_campaign !== "paver-cost-test") throw new Error("utm_campaign not forwarded");
+  if (submitted.utm_content !== "hero") throw new Error("utm_content not forwarded");
+  if (submitted.utm_term !== "paver patio cost") throw new Error("utm_term not forwarded");
+  if (submitted.raw_utm?.gclid !== "test-gclid") throw new Error("gclid not forwarded in raw_utm");
+  if (submitted.raw_utm?.gbraid !== "test-gbraid") throw new Error("gbraid not forwarded in raw_utm");
+  if (submitted.raw_utm?.wbraid !== "test-wbraid") throw new Error("wbraid not forwarded in raw_utm");
+  if (submitted.raw_payload?.referrer !== "https://www.google.com/search") {
+    throw new Error("referrer not scrubbed and forwarded");
+  }
+  if (submitted.raw_payload?.landing_page !== "/san-diego/cost/paver-patio-cost") {
+    throw new Error("landing_page not forwarded");
+  }
+  if (submitted.raw_payload?.guide_slug !== "paver-patio-cost") {
+    throw new Error("guide_slug not forwarded");
+  }
+  if (submitted.raw_payload?.variant_id !== "estimate_v1") {
+    throw new Error("variant_id not forwarded");
+  }
+  if (submitted.raw_payload?.session_id !== "hg-session-123") {
+    throw new Error("session_id not forwarded");
+  }
+  if (submitted.raw_payload?.anonymous_id !== "hg-anon-456") {
+    throw new Error("anonymous_id not forwarded");
+  }
   if (submitted.raw_payload?.internal_test_email !== "anthony@revko.co") {
     throw new Error("internal test email not attached to raw payload");
   }

@@ -1,7 +1,10 @@
 "use client";
 
+import { captureHomeGuideCtaClick } from "@/lib/homeguideBrowserAnalytics";
+
 export default function MobileStickyCTA() {
   function scrollToForm() {
+    captureHomeGuideCtaClick("mobile_sticky_estimate", "mobile_sticky");
     document
       .getElementById("lead-form")
       ?.scrollIntoView({ behavior: "smooth" });

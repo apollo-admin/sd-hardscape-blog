@@ -7,6 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
+    "test:p0": "node scripts/verify-homeguideiq-p0.mjs",
     "test:lead-api": "node scripts/smoke-lead-api.mjs"
   },
   "dependencies": {

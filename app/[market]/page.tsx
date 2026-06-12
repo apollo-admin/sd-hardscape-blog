@@ -18,9 +18,27 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { market } = await params;
   const name = marketNames[market] || market;
+  const url = `/${market}`;
   return {
     title: `${name} Outdoor Project Cost Guides`,
     description: `Cost guides for ${name} outdoor projects, updated for 2026.`,
+    alternates: {
+      canonical: `/${market}`,
+    },
+    openGraph: {
+      title: `${name} Outdoor Project Cost Guides`,
+      description: `Cost guides for ${name} outdoor projects, updated for 2026.`,
+      url,
+      siteName: "HomeGuide IQ",
+      type: "website",
+      images: ["/opengraph-image"],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: `${name} Outdoor Project Cost Guides`,
+      description: `Cost guides for ${name} outdoor projects, updated for 2026.`,
+      images: ["/opengraph-image"],
+    },
   };
 }
 

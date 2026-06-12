@@ -2,6 +2,7 @@ import {
   generateFAQSchema,
   generateAggregateOfferSchema,
   generateArticleSchema,
+  generateBreadcrumbListSchema,
 } from "@/lib/schema";
 import type { ArticleFrontmatter } from "@/lib/mdx";
 import LeadCaptureForm from "./LeadCaptureForm";
@@ -23,6 +24,7 @@ export default function ArticleLayout({
     schemas.push(generateAggregateOfferSchema(frontmatter.schema.offers));
   }
   schemas.push(generateArticleSchema(frontmatter));
+  schemas.push(generateBreadcrumbListSchema(frontmatter));
 
   const updated = frontmatter.updated || frontmatter.date;
   const displayDate = new Intl.DateTimeFormat("en-US", {

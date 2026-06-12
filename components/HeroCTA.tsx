@@ -1,7 +1,10 @@
 "use client";
 
+import { captureHomeGuideCtaClick } from "@/lib/homeguideBrowserAnalytics";
+
 export default function HeroCTA() {
   function scrollToForm() {
+    captureHomeGuideCtaClick("hero_estimate", "hero");
     document
       .getElementById("lead-form")
       ?.scrollIntoView({ behavior: "smooth" });
